@@ -6,45 +6,231 @@ import android.app.Activity;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+import com.kdt.mcgui.ProgressLayout;
+
 import net.kdt.pojavlaunch.multirt.MultiRTUtils;
 import net.kdt.pojavlaunch.multirt.Runtime;
 import net.kdt.pojavlaunch.utils.MathUtils;
 import net.kdt.pojavlaunch.value.launcherprofiles.LauncherProfiles;
 import net.kdt.pojavlaunch.value.launcherprofiles.MinecraftProfile;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
 public class NewJREUtil {
-    private static boolean checkInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime) {
-        String launcher_runtime_version;
-        String installed_runtime_version = MultiRTUtils.readInternalRuntimeVersion(internalRuntime.name);
-        try {
-            launcher_runtime_version = Tools.read(assetManager.open(internalRuntime.path+"/version"));
-        }catch (IOException exc) {
-            //we don't have a runtime included!
-            //if we have one installed -> return true -> proceed (no updates but the current one should be functional)
-            //if we don't -> return false -> Cannot find compatible Java runtime
-            return installed_runtime_version != null;
+    private static final String TAG = "NewJREUtil";
+
+    private static boolean checkInternalRuntime(Activity activity, InternalRuntime internalRuntime) {
+        // 1. Check if the runtime is already installed and functional
+        Runtime installedRuntime = MultiRTUtils.read(internalRuntime.name);
+        if (installedRuntime != null && installedRuntime.javaVersion >= internalRuntime.majorVersion) {
+            File javaBin = new File(Tools.MULTIRT_HOME, internalRuntime.name + "/bin/java");
+            if (javaBin.exists()) {
+                Log.i(TAG, "Runtime " + internalRuntime.name + " is already installed and functional (Java " + installedRuntime.javaVersion + ")");
+                return true;
+            }
         }
-        // this implicitly checks for null, so it will unpack the runtime even if we don't have one installed
-        if(!launcher_runtime_version.equals(installed_runtime_version))
-            return unpackInternalRuntime(assetManager, internalRuntime, launcher_runtime_version);
-        else return true;
+
+        AssetManager assetManager = activity.getAssets();
+        String nativeLibDir = activity.getApplicationInfo().nativeLibraryDir;
+        if (nativeLibDir == null) {
+            nativeLibDir = Tools.NATIVE_LIB_DIR;
+        }
+
+        // 2. Check if runtime archive is bundled in APK assets
+        if (tryInstallFromAssets(assetManager, internalRuntime, nativeLibDir)) {
+            MultiRTUtils.forceReread(internalRuntime.name);
+            writeVersionFile(internalRuntime.name, String.valueOf(internalRuntime.majorVersion));
+            return true;
+        }
+
+        // 3. Not found in assets -> auto-download from official repository
+        Log.i(TAG, "Runtime not found locally or in assets. Auto-downloading " + internalRuntime.name);
+        if (downloadAndInstallRuntime(internalRuntime, nativeLibDir)) {
+            MultiRTUtils.forceReread(internalRuntime.name);
+            writeVersionFile(internalRuntime.name, String.valueOf(internalRuntime.majorVersion));
+            return true;
+        }
+
+        return false;
     }
 
-    private static boolean unpackInternalRuntime(AssetManager assetManager, InternalRuntime internalRuntime, String version) {
+    private static boolean tryInstallFromAssets(AssetManager assetManager, InternalRuntime internalRuntime, String nativeLibDir) {
+        String arch = archAsString(Tools.DEVICE_ARCHITECTURE);
+
+        // A. Check single complete archive: e.g. components/jre-new/jre-arm64.tar.xz or components/jre-new/jre.tar.xz
+        String[] possibleArchives = {
+                internalRuntime.path + "/jre-" + arch + ".tar.xz",
+                internalRuntime.path + "/jre.tar.xz"
+        };
+
+        for (String path : possibleArchives) {
+            try (InputStream is = assetManager.open(path)) {
+                Log.i(TAG, "Unpacking bundled runtime from asset: " + path);
+                ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java 17 o'rnatilmoqda...");
+                MultiRTUtils.installRuntimeNamed(nativeLibDir, is, internalRuntime.name);
+                MultiRTUtils.postPrepare(internalRuntime.name);
+                return true;
+            } catch (IOException ignored) {
+                // Not found under this asset path
+            }
+        }
+
+        // B. Check split binpack archive: universal.tar.xz + bin-<arch>.tar.xz
         try {
-            MultiRTUtils.installRuntimeNamedBinpack(
-                    assetManager.open(internalRuntime.path+"/universal.tar.xz"),
-                    assetManager.open(internalRuntime.path+"/bin-" + archAsString(Tools.DEVICE_ARCHITECTURE) + ".tar.xz"),
-                    internalRuntime.name, version);
+            InputStream universalIs = assetManager.open(internalRuntime.path + "/universal.tar.xz");
+            InputStream binIs = assetManager.open(internalRuntime.path + "/bin-" + arch + ".tar.xz");
+            String version = String.valueOf(internalRuntime.majorVersion);
+            try {
+                version = Tools.read(assetManager.open(internalRuntime.path + "/version"));
+            } catch (Exception ignored) {}
+
+            ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java 17 o'rnatilmoqda...");
+            MultiRTUtils.installRuntimeNamedBinpack(universalIs, binIs, internalRuntime.name, version);
             MultiRTUtils.postPrepare(internalRuntime.name);
             return true;
-        }catch (IOException e) {
-            Log.e("NewJREAuto", "Internal JRE unpack failed", e);
+        } catch (IOException ignored) {
+            // Binpack not found
+        }
+
+        return false;
+    }
+
+    private static String getDownloadUrl(InternalRuntime internalRuntime, int arch) {
+        if (internalRuntime == InternalRuntime.JRE_17) {
+            switch (arch) {
+                case Architecture.ARCH_ARM64:
+                    return "https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch/releases/download/jre17-ec28559/jre17-arm64-20210825-release.tar.xz";
+                case Architecture.ARCH_ARM:
+                    return "https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch/releases/download/jre17-ec28559/jre17-arm-20210914-release.tar.xz";
+                case Architecture.ARCH_X86_64:
+                    return "https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch/releases/download/jre17-ec28559/jre17-x86_64-20210825-release.tar.xz";
+                case Architecture.ARCH_X86:
+                    return "https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch/releases/download/jre17-ec28559/jre17-x86-20220225-release.tar.xz";
+                default:
+                    return null;
+            }
+        }
+        return null;
+    }
+
+    private static boolean downloadAndInstallRuntime(InternalRuntime internalRuntime, String nativeLibDir) {
+        String urlString = getDownloadUrl(internalRuntime, Tools.DEVICE_ARCHITECTURE);
+        if (urlString == null) {
+            Log.e(TAG, "No download URL available for arch " + Tools.DEVICE_ARCHITECTURE);
             return false;
+        }
+
+        File cacheDir = Tools.DIR_CACHE;
+        if (cacheDir != null && !cacheDir.exists()) cacheDir.mkdirs();
+        File tempFile = new File(cacheDir, "jre_" + internalRuntime.name + "_" + archAsString(Tools.DEVICE_ARCHITECTURE) + ".tar.xz");
+        File partFile = new File(tempFile.getAbsolutePath() + ".part");
+
+        try {
+            downloadFileWithProgress(urlString, partFile);
+            if (!partFile.exists() || partFile.length() < 1000000) {
+                Log.e(TAG, "Downloaded file is invalid or too small");
+                partFile.delete();
+                return false;
+            }
+
+            if (tempFile.exists()) tempFile.delete();
+            if (!partFile.renameTo(tempFile)) {
+                FileUtils.copyFile(partFile, tempFile);
+                partFile.delete();
+            }
+
+            ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 100, "Java 17 o'rnatilmoqda...");
+            try (FileInputStream fis = new FileInputStream(tempFile)) {
+                MultiRTUtils.installRuntimeNamed(nativeLibDir, fis, internalRuntime.name);
+                MultiRTUtils.postPrepare(internalRuntime.name);
+            }
+            tempFile.delete();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to download and install runtime", e);
+            if (partFile.exists()) partFile.delete();
+            if (tempFile.exists()) tempFile.delete();
+            return false;
+        }
+    }
+
+    private static void downloadFileWithProgress(String initialUrl, File destination) throws IOException {
+        String currentUrl = initialUrl;
+        HttpURLConnection conn = null;
+        int redirectCount = 0;
+
+        while (redirectCount < 8) {
+            URL url = new URL(currentUrl);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(20000);
+            conn.setReadTimeout(30000);
+            conn.setRequestProperty("User-Agent", "NeoTerra-Launcher");
+            conn.setInstanceFollowRedirects(true);
+            int code = conn.getResponseCode();
+
+            if (code == HttpURLConnection.HTTP_MOVED_PERM || code == HttpURLConnection.HTTP_MOVED_TEMP
+                    || code == HttpURLConnection.HTTP_SEE_OTHER || code == 307 || code == 308) {
+                String location = conn.getHeaderField("Location");
+                conn.disconnect();
+                if (location == null) throw new IOException("Redirect response without Location header");
+                currentUrl = location;
+                redirectCount++;
+            } else if (code == HttpURLConnection.HTTP_OK) {
+                break;
+            } else {
+                conn.disconnect();
+                throw new IOException("HTTP error response: " + code);
+            }
+        }
+
+        if (conn == null) throw new IOException("Connection failed");
+
+        long totalBytes = conn.getContentLengthLong();
+        try (InputStream in = conn.getInputStream();
+             FileOutputStream out = new FileOutputStream(destination)) {
+            byte[] buffer = new byte[16384];
+            long downloadedBytes = 0;
+            int read;
+            long lastProgressUpdate = 0;
+
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+                downloadedBytes += read;
+
+                long now = System.currentTimeMillis();
+                if (now - lastProgressUpdate > 150) {
+                    lastProgressUpdate = now;
+                    int percent = totalBytes > 0 ? (int) ((downloadedBytes * 100) / totalBytes) : -1;
+                    String msg = percent >= 0
+                            ? "Java 17 yuklab olinmoqda... (" + percent + "%)"
+                            : "Java 17 yuklab olinmoqda...";
+                    ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, percent >= 0 ? percent : 50, msg);
+                }
+            }
+            out.flush();
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    private static void writeVersionFile(String runtimeName, String version) {
+        try {
+            File verFile = new File(Tools.MULTIRT_HOME, runtimeName + "/pojav_version");
+            try (FileOutputStream fos = new FileOutputStream(verFile)) {
+                fos.write(version.getBytes());
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Could not write pojav_version file", e);
         }
     }
 
@@ -65,34 +251,28 @@ public class NewJREUtil {
         return MathUtils.findNearestPositive(targetVersion, runtimeList, (runtime)->runtime.majorVersion);
     }
 
-
     /** @return true if everything is good, false otherwise.  */
     public static boolean installNewJreIfNeeded(Activity activity, JMinecraftVersionList.Version versionInfo) {
-        //Now we have the reliable information to check if our runtime settings are good enough
         if (versionInfo.javaVersion == null || versionInfo.javaVersion.component.equalsIgnoreCase("jre-legacy"))
             return true;
 
         int gameRequiredVersion = versionInfo.javaVersion.majorVersion;
 
         LauncherProfiles.load();
-        AssetManager assetManager = activity.getAssets();
         MinecraftProfile minecraftProfile = LauncherProfiles.getCurrentProfile();
         String profileRuntime = Tools.getSelectedRuntime(minecraftProfile);
         Runtime runtime = MultiRTUtils.read(profileRuntime);
-        // Partly trust the user with his own selection, if the game can even try to run in this case
+
+        // Check if selected runtime satisfies requirement
         if (runtime.javaVersion >= gameRequiredVersion) {
-            // Check whether the selection is an internal runtime
             InternalRuntime internalRuntime = getInternalRuntime(runtime);
-            // If it is, check if updates are available from the APK file
             if(internalRuntime != null) {
-                // Not calling showRuntimeFail on failure here because we did, technically, find the compatible runtime
-                return checkInternalRuntime(assetManager, internalRuntime);
+                return checkInternalRuntime(activity, internalRuntime);
             }
             return true;
         }
 
-        // If the runtime version selected by the user is not appropriate for this version (which means the game won't run at all)
-        // automatically pick from either an already installed runtime, or a runtime packed with the launcher
+        // Automatically pick from installed or internal runtimes
         MathUtils.RankedValue<?> nearestInstalledRuntime = getNearestInstalledRuntime(gameRequiredVersion);
         MathUtils.RankedValue<?> nearestInternalRuntime = getNearestInternalRuntime(gameRequiredVersion);
 
@@ -100,7 +280,6 @@ public class NewJREUtil {
                 nearestInternalRuntime, nearestInstalledRuntime, (value)->value.rank
         );
 
-        // No possible selections
         if(selectedRankedRuntime == null) {
             showRuntimeFail(activity, versionInfo);
             return false;
@@ -110,24 +289,18 @@ public class NewJREUtil {
         String appropriateRuntime;
         InternalRuntime internalRuntime;
 
-        // Perform checks on the picked runtime
         if(selected instanceof Runtime) {
-            // If it's an already installed runtime, save its name and check if
-            // it's actually an internal one (just in case)
             Runtime selectedRuntime = (Runtime) selected;
             appropriateRuntime = selectedRuntime.name;
             internalRuntime = getInternalRuntime(selectedRuntime);
         } else if (selected instanceof InternalRuntime) {
-            // If it's an internal runtime, set it's name as the appropriate one.
             internalRuntime = (InternalRuntime) selected;
             appropriateRuntime = internalRuntime.name;
         } else {
-            throw new RuntimeException("Unexpected type of selected: "+selected.getClass().getName());
+            throw new RuntimeException("Unexpected type of selected: " + selected.getClass().getName());
         }
 
-        // If it turns out the selected runtime is actually an internal one, attempt automatic installation or update
-        if(internalRuntime != null && !checkInternalRuntime(assetManager, internalRuntime)) {
-            // Not calling showRuntimeFail here because we did, technically, find the compatible runtime
+        if(internalRuntime != null && !checkInternalRuntime(activity, internalRuntime)) {
             return false;
         }
 
@@ -153,5 +326,4 @@ public class NewJREUtil {
             this.path = path;
         }
     }
-
 }
