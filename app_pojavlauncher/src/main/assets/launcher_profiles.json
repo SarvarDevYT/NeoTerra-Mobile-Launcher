@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "NeoTerra": {
+      "name": "NeoTerra Server (1.20.4)",
+      "lastVersionId": "1.20.4",
+      "icon": "Furnace",
+      "pojavRendererName": "opengles2",
+      "javaArgs": "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=20 -XX:+UnlockExperimentalVMOptions -XX:+AlwaysPreTouch"
+    }
+  },
+  "selectedProfile": "NeoTerra"
+}
