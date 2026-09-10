@@ -2,7 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">NeoTerra Mobile Launcher</string>
     <string name="app_short_name">NeoTerra Mobile Launcher</string>
-    <string name="login_online_username_hint">O\'yinchi nomi (Nick)</string>
+    <string name="login_online_username_hint">O\'yinchi nomi yoki Ely.by niki</string>
     <string name="login_online_login_label">Kirish</string>
     <string name="hint_control_mapping">Harakatlar menyusini ochish uchun yuqoridagi tishli g\'ildirakchani ⚙ bosing.
 Tugmani tahrirlash, o\'lchamini o\'zgartirish yoki o\'chirish uchun ustiga bosing.</string>

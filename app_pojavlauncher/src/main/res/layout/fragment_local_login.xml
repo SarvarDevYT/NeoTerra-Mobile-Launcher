@@ -61,4 +61,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/login_edit_email" />
 
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_25sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        android:text="💡 Ely.by yoki o'yinchi nikingizni kiriting. Skiningiz avtomatik yuklanadi va serverda barchaga ko'rinadi!"
+        android:textColor="#38BDF8"
+        android:textSize="@dimen/_11ssp"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_button" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

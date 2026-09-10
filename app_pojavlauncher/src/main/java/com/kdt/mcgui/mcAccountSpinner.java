@@ -140,6 +140,11 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
                 Log.e("McAccountSpinner", "Failed to save the account : " + e);
             }
 
+            new Thread(() -> {
+                account.updateSkinFace();
+                post(this::setImageFromSelectedAccount);
+            }).start();
+
             mDoneListener.onLoginDone(account);
         }
         return false;
@@ -317,6 +322,15 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
 
         mSelectecAccount = selectedAccount;
         setImageFromSelectedAccount();
+        if(mSelectecAccount != null) {
+            new Thread(() -> {
+                File skinFaceFile = new File(Tools.DIR_CACHE, mSelectecAccount.username + ".png");
+                if(!skinFaceFile.exists() || skinFaceFile.length() < 100) {
+                    mSelectecAccount.updateSkinFace();
+                    post(this::setImageFromSelectedAccount);
+                }
+            }).start();
+        }
     }
 
     @Deprecated()
