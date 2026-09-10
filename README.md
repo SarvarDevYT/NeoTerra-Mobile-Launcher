@@ -1,151 +1,88 @@
-<h1 align="center">PojavLauncher</h1>
+<div align="center">
 
-<img src="https://github.com/PojavLauncherTeam/PojavLauncher/blob/v3_openjdk/app_pojavlauncher/src/main/assets/pojavlauncher.png" align="left" width="130" height="150" alt="PojavLauncher logo">
+# 🌍 NeoTerra Mobile Launcher
 
-[![Android CI](https://github.com/PojavLauncherTeam/PojavLauncher/workflows/Android%20CI/badge.svg)](https://github.com/PojavLauncherTeam/PojavLauncher/actions)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/PojavLauncherTeam/PojavLauncher)](https://github.com/PojavLauncherTeam/PojavLauncher/actions)
-[![Crowdin](https://badges.crowdin.net/pojavlauncher/localized.svg)](https://crowdin.com/project/pojavlauncher)
-[![Discord](https://img.shields.io/discord/724163890803638273.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.com/invite/aenk3EUvER)
-[![Twitter Follow](https://img.shields.io/twitter/follow/plaunchteam?color=blue&style=flat-square)](https://twitter.com/PLaunchTeam)
+**Android qurilmalari uchun rasmiy Minecraft: Java Edition launcheri**
 
-*From [Boardwalk](https://github.com/zhuowei/Boardwalk)'s ashes here comes PojavLauncher!*
+[![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-38BDF8?style=for-the-badge&logo=android&logoColor=white)](https://neoterra.uz)
+[![Server](https://img.shields.io/badge/Server-play.neoterra.uz-22C55E?style=for-the-badge&logo=minecraft&logoColor=white)](https://neoterra.uz)
+[![Performance](https://img.shields.io/badge/Performance-60%2B%20FPS-EAB308?style=for-the-badge&logo=speedtest&logoColor=white)](https://neoterra.uz)
+[![Language](https://img.shields.io/badge/Language-O%27zbekcha-A855F7?style=for-the-badge)](https://neoterra.uz)
+[![License](https://img.shields.io/badge/License-GPLv3-EF4444?style=for-the-badge)](LICENSE)
 
-PojavLauncher is a launcher that allows you to play Minecraft: Java Edition on your Android and [iOS](https://github.com/PojavLauncherTeam/PojavLauncher_iOS) devices.
+<br/>
 
-For more details, check out our [wiki](https://pojavlauncher.app/)!
+**NeoTerra Mobile Launcher** — o'zbek Minecraft hamjamiyati uchun maxsus ishlab chiqilgan, kuchsiz va o'rta toifadagi smartfonlarda ham yuqori FPS va silliq o'yin jarayonini ta'minlaydigan zamonaviy mobil launcher.
 
-## Important Notes
+</div>
 
-**PojavLauncher has been discontinued** and is no longer supported. Its successor is available [here](https://github.com/AngelAuraMC/Amethyst-Android).
+---
 
-## Table of Contents
+## ✨ Asosiy Imkoniyatlar
 
-* [Introduction](#introduction)
-* [Getting PojavLauncher](#getting-pojavlauncher)
-* [Building](#building)
-    * [Quick Build (Recommended)](#quick-build-recommended)
-    * [Detailed Build](#detailed-build)
-* [Current Status](#current-status)
-* [Known Issues](#known-issues)
-* [FAQ](#faq)
-* [Contributing](#contributing)
-* [Support](#support)
-* [License](#license)
-* [Credits & Dependencies](#credits--dependencies)
-* [Roadmap](#roadmap)
+- 🚀 **Maksimal Unumdorlik (60+ FPS):** Holy GL4ES va Zink Vulkan grafik drayverlari, 720p aqlli masshtablash (*Resolution Scaler*), G1GC xotira tozalash optimizatsiyasi orqali qizib ketish va qotishlarsiz barqaror kadrlar tezligi.
+- 🌐 **NeoTerra Serveriga 1-Click Kirish:** Bosh ekrandagi maxsus yashil tugma orqali to'g'ridan-to'g'ri `play.neoterra.uz:25565` serveriga avtomatik ulanish.
+- 🇺🇿 **100% O'zbekcha Lokalizatsiya:** Barcha menyular, sozlamalar, boshqaruv tugmalari va tizim xabarlari to'liq ona tilimizda.
+- 🎨 **Ely.by Skin & Plash Tizimi:** Ely.by yoki o'yinchi niki kiritilishi bilanoq uning skini va 3D bosh qismi avtomatik yuklanadi hamda serverdagi barcha o'yinchilarga ko'rinadi.
+- 📱 **Zamonaviy Sensorli Boshqaruv (Touch Controls):** Qulay shaffof tugmalar (*squircles*), o'zbekcha yorliqlar (`URISH`, `BLOK`, `SAKRASH`, `SNEAK`, `INV`, `KURSOR`, `KLAV`, `F3`, `F5`, `CHAT`, `TAB`) va haptic titrash orqali qulay boshqaruv.
+- 🧩 **Modlar Qo'llab-quvvatlovi:** Forge, Fabric, Quilt, OptiFine, Iris, Sodium modlari hamda Minecraft 1.7.10 dan tortib 1.21+ gacha bo'lgan barcha versiyalar bilan to'liq moslik.
+- ☕ **Avtomatik Java boshqaruvi:** Java 8, Java 17 va Java 21 versiyalarini avtomatik moslashtirib ishga tushirish.
 
-## Introduction
+---
 
-* PojavLauncher is a Minecraft: Java Edition launcher for Android and iOS based on [Boardwalk](https://github.com/zhuowei/Boardwalk)
-* This launcher can launch almost all available Minecraft versions ranging from rd-132211 to 1.21 snapshots (including Combat Test versions)
-* Modding via Forge and Fabric are also supported.
-* This repository contains source code for Android. For iOS/iPadOS, check out [PojavLauncher_iOS](https://github.com/PojavLauncherTeam/PojavLauncher_iOS).
+## 📥 O'rnatish va Foydalanish
 
-## Getting PojavLauncher
+1. [Releases](https://github.com/SarvarDevYT/NeoTerra-Mobile-Launcher/releases) bo'limidan eng so'nggi **NeoTerra-Launcher-Mobile.apk** faylini yuklab oling.
+2. APK faylni smartfoningizga o'rnating va kerakli xotira ruxsatlarini bering.
+3. Launcherni oching va nikingizni kiriting (agar Ely.by da hisobingiz bo'lsa, o'sha nikni kiritsangiz skiningiz avtomatik ulanadi).
+4. **"NEOTERRA SERVERIGA KIRISH"** tugmasini bosing va o'yindan zavqlaning!
 
-You can get PojavLauncher via three methods:
+---
 
-1. **Releases:** Download the prebuilt app from our [stable releases](https://github.com/PojavLauncherTeam/PojavLauncher/releases) or [automatic builds](https://github.com/PojavLauncherTeam/PojavLauncher/actions).
-2. **Google Play:** Get it from Google Play by clicking on this badge: [![Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=net.kdt.pojavlaunch)
-3. **Build from Source:** Follow the [building instructions](#building) below.
+## 🛠 Manba Kodidan Yig'ish (Building from Source)
 
-## Building
+Loyihani o'zingiz yig'ish uchun:
 
-### Quick Build (Recommended)
+### Talablar:
+- **JDK 17** (masalan, Eclipse Adoptium JDK 17)
+- **Android SDK** (API 34+, Build-Tools 34.0.0+)
+- **Android NDK** (r27b yoki 27.1.12297006)
 
-The easiest way to build PojavLauncher is to use the pre-built JREs provided by our CI.
+### Yig'ish buyrug'i:
 
-1. Clone the repository: `git clone https://github.com/PojavLauncherTeam/PojavLauncher.git`
-2. Build the launcher: `./gradlew :app_pojavlauncher:assembleDebug` (Use `gradlew.bat` on Windows)
+```bash
+# Repozitoriyani klonlash
+git clone https://github.com/SarvarDevYT/NeoTerra-Mobile-Launcher.git
+cd NeoTerra-Mobile-Launcher
 
-The built APK will be located in `app_pojavlauncher/build/outputs/apk/debug/`.
+# Windows uchun:
+.\gradlew.bat assembleDebug
 
-### Detailed Build
+# Linux / macOS uchun:
+chmod +x gradlew
+./gradlew assembleDebug
+```
 
-If you need more control over the build process, follow these steps:
+Tayyor APK fayl quyidagi manzilda hosil bo'ladi:
+```
+app/build/outputs/apk/debug/app-debug.apk
+```
 
-1. **Java Runtime Environment (JRE):** Download the `jre8-pojav` artifact from our [CI auto builds](https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch/actions).  This package contains pre-built JREs for all supported architectures.  If you need to build the JRE yourself, follow the instructions in the [android-openjdk-build-multiarch](https://github.com/PojavLauncherTeam/android-openjdk-build-multiarch) repository.
+---
 
-2. **LWJGL:** The build instructions for the custom LWJGL are available over the [LWJGL repository](https://github.com/PojavLauncherTeam/lwjgl3).
+## 🌐 Server Ma'lumotlari
 
-3. **Language List:** Because languages are auto-added by Crowdin, you need to run the language list generator before building. In the project directory, run:
-   * Linux/macOS:
-     ```bash
-     chmod +x scripts/languagelist_updater.sh
-     bash scripts/languagelist_updater.sh
-     ```
-   * Windows:
-     ```batch
-     scripts\languagelist_updater.bat
-     ```
+| Parametr | Qiymat |
+| :--- | :--- |
+| **Server Nomi** | NeoTerra Minecraft Server |
+| **Server IP** | `play.neoterra.uz` |
+| **Port** | `25565` |
+| **Rasmiy Veb-sayt** | [neoterra.uz](https://neoterra.uz) |
+| **Kompyuter Launcheri** | [NeoTerra Launcher PC](https://github.com/SarvarDevYT/NEOTERRA-Launcher) |
 
-4. **Build GLFW stub:** `./gradlew :jre_lwjgl3glfw:build`
+---
 
-5. **Build the launcher:** `./gradlew :app_pojavlauncher:assembleDebug` (Replace `gradlew` with `gradlew.bat` on Windows).
+## 📄 Litsenziya
 
-## Current Status
-
-* [x] OpenJDK 8 Mobile port: ARM32, ARM64, x86, x86_64
-* [x] OpenJDK 17 Mobile port: ARM32, ARM64, x86, x86_64
-* [x] OpenJDK 21 Mobile port: ARM32, ARM64, x86, x86_64
-* [x] Headless mod installer
-* [x] Mod installer with GUI
-* [x] OpenGL in OpenJDK environment
-* [x] OpenAL (works on most devices)
-* [x] Support for Minecraft 1.12.2 and below
-* [x] Support for Minecraft 1.13 and above
-* [x] Support for Minecraft 1.17 (22w13a) and above
-* [x] Game surface zooming
-* [x] New input pipe rewritten to native code
-* [x] Rewritten entire controls system
-* [ ] More to come!
-
-## Known Issues
-
-See our [issue tracker](https://github.com/PojavLauncherTeam/PojavLauncher/issues) for a list of known issues and their current status.
-
-## FAQ
-
-See our [wiki](https://pojavlauncherteam.github.io/) for more information.
-
-## Contributing
-
-Contributions are welcome! We welcome any type of contribution, not only code. For example, you can help improve the [wiki](https://pojavlauncherteam.github.io/), contribute to the [translations](https://crowdin.com/project/pojavlauncher), or submit bug reports and feature requests.
-
-Any code change should be submitted as a pull request. The description should explain what the code does and give steps to execute it.
-
-## Support
-
-For support, please join our [Discord server](https://discord.com/invite/aenk3EUvER).
-
-## License
-
-PojavLauncher is licensed under [GNU LGPLv3](https://github.com/PojavLauncherTeam/PojavLauncher/blob/v3_openjdk/LICENSE).
-
-## Credits & Dependencies
-
-* [Boardwalk](https://github.com/zhuowei/Boardwalk) (JVM Launcher): Unknown License/[Apache License 2.0](https://github.com/zhuowei/Boardwalk/blob/master/LICENSE) or GNU GPLv2.
-* Android Support Libraries: [Apache License 2.0](https://android.googlesource.com/platform/prebuilts/maven_repo/android/+/master/NOTICE.txt).
-* [GL4ES](https://github.com/PojavLauncherTeam/gl4es): [MIT License](https://github.com/ptitSeb/gl4es/blob/master/LICENSE).
-* [OpenJDK](https://github.com/PojavLauncherTeam/openjdk-multiarch-jdk8u): [GNU GPLv2 License](https://openjdk.java.net/legal/gplv2+ce.html).
-* [LWJGL3](https://github.com/PojavLauncherTeam/lwjgl3): [BSD-3 License](https://github.com/LWJGL/lwjgl3/blob/master/LICENSE.md).
-* [LWJGLX](https://github.com/PojavLauncherTeam/lwjglx) (LWJGL2 API compatibility layer for LWJGL3): unknown license.
-* [Mesa 3D Graphics Library](https://gitlab.freedesktop.org/mesa/mesa): [MIT License](https://docs.mesa3d.org/license.html).
-* [pro-grade](https://github.com/pro-grade/pro-grade) (Java sandboxing security manager): [Apache License 2.0](https://github.com/pro-grade/pro-grade/blob/master/LICENSE.txt).
-* [bhook](https://github.com/bytedance/bhook) (Used for exit code trapping): [MIT license](https://github.com/bytedance/bhook/blob/main/LICENSE).
-* [libepoxy](https://github.com/anholt/libepoxy): [MIT License](https://github.com/anholt/libepoxy/blob/master/COPYING).
-* [virglrenderer](https://github.com/PojavLauncherTeam/virglrenderer): [MIT License](https://gitlab.freedesktop.org/virgl/virglrenderer/-/blob/master/COPYING).
-* Thanks to [MCHeads](https://mc-heads.net) for providing Minecraft avatars.
-
-## Roadmap
-
-We are currently focusing on:
-
-* Exploring new rendering technologies.
-
-Future plans include:
-
-* Improving stability and performance.
-* Enhancing the mod installation experience.
-
-We welcome community feedback and suggestions for our roadmap.  Please feel free to open a feature request in our [issue tracker](https://github.com/PojavLauncherTeam/PojavLauncher/issues).
+NeoTerra Mobile Launcher [GNU General Public License v3.0](LICENSE) litsenziyasi asosida taqdim etiladi.
+Open-source hamjamiyatiga va barcha Minecraft modderlariga o'z minnatdorchiligimizni bildiramiz.

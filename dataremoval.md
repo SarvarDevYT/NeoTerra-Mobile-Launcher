@@ -1,15 +1,12 @@
-# Remove PojavLauncher account data
-PojavLauncher uses two types of accounts:
-- Local accounts
-- Microsoft accounts
-<br>
+# NeoTerra Mobile Launcher hisob ma'lumotlarini o'chirish
 
-If you wish to remove a local account or a Microsoft account from the launcher:<br>
-1. Select the account that you wish to remove in the account selector
-2. Press the trash bin button
-3. All account data stored in the launcher will be removed immediately.
-<br>
+NeoTerra Mobile Launcher ikki turdagi hisoblardan foydalanadi:
+- Mahalliy / Ely.by hisoblari
+- Microsoft hisoblari
 
-Your account data is not shared with any third parties (except Microsoft, of course)<br>
-If you need to remove all of your Microsoft account data, go to:<br>
-https://aka.ms/CloseAccount
+Agar siz launcherdan hisobingizni o'chirmoqchi bo'lsangiz:
+1. Hisoblar ro'yxatidan o'chirmoqchi bo'lgan hisobingizni tanlang.
+2. O'chirish (savat) tugmasini bosing.
+3. Ushbu hisobga tegishli barcha ma'lumotlar qurilmadan darhol o'chiriladi.
+
+Hisob ma'lumotlaringiz hech qanday uchinchi shaxslarga yuborilmaydi va faqat sizning qurilmangizda saqlanadi.
