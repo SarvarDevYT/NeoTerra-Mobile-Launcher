@@ -133,6 +133,10 @@ public class MinecraftAccount {
         }
     }
 
+    public void resetFaceCache() {
+        mFaceCache = null;
+    }
+
     public Bitmap getSkinFace(){
         File skinFaceFile = getSkinFaceFile(username);
         if (!skinFaceFile.exists()) {
@@ -142,16 +146,18 @@ public class MinecraftAccount {
             }
             return null;
         } else {
-            if(mFaceCache == null) {
+            if(mFaceCache == null || mFaceCache.isRecycled()) {
                 mFaceCache = BitmapFactory.decodeFile(skinFaceFile.getAbsolutePath());
             }
         }
 
-        return mFaceCache;
+        return (mFaceCache != null && !mFaceCache.isRecycled()) ? mFaceCache : null;
     }
 
     public static Bitmap getSkinFace(String username) {
-        return BitmapFactory.decodeFile(getSkinFaceFile(username).getAbsolutePath());
+        File f = getSkinFaceFile(username);
+        if (!f.exists()) return null;
+        return BitmapFactory.decodeFile(f.getAbsolutePath());
     }
 
     private static File getSkinFaceFile(String username) {

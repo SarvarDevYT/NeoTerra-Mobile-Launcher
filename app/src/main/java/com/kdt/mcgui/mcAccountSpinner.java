@@ -142,7 +142,16 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
 
             new Thread(() -> {
                 account.updateSkinFace();
-                post(this::setImageFromSelectedAccount);
+                post(() -> {
+                    if (getAdapter() instanceof AccountAdapter) {
+                        ((AccountAdapter) getAdapter()).clearCache();
+                        ((AccountAdapter) getAdapter()).notifyDataSetChanged();
+                    }
+                    if(mSelectecAccount != null && mSelectecAccount.username.equals(account.username)) {
+                        mSelectecAccount.resetFaceCache();
+                        setImageFromSelectedAccount();
+                    }
+                });
             }).start();
 
             mDoneListener.onLoginDone(account);
@@ -327,7 +336,16 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
                 File skinFaceFile = new File(Tools.DIR_CACHE, mSelectecAccount.username + ".png");
                 if(!skinFaceFile.exists() || skinFaceFile.length() < 100) {
                     mSelectecAccount.updateSkinFace();
-                    post(this::setImageFromSelectedAccount);
+                    post(() -> {
+                        if (getAdapter() instanceof AccountAdapter) {
+                            ((AccountAdapter) getAdapter()).clearCache();
+                            ((AccountAdapter) getAdapter()).notifyDataSetChanged();
+                        }
+                        if(mSelectecAccount != null) {
+                            mSelectecAccount.resetFaceCache();
+                            setImageFromSelectedAccount();
+                        }
+                    });
                 }
             }).start();
         }
@@ -336,33 +354,34 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
     @Deprecated()
     /* Legacy behavior, update the head image manually for the selected account */
     private void setImageFromSelectedAccount(){
-        BitmapDrawable oldBitmapDrawable = mHeadDrawable;
-
         if(mSelectecAccount != null){
             View layout = getSelectedView();
             if(layout != null){
                 ExtendedTextView view = layout.findViewById(R.id.account_item);
-                Bitmap bitmap = mSelectecAccount.getSkinFace();
-                if(bitmap != null) {
-                    mHeadDrawable = new BitmapDrawable(getResources(), bitmap);
-                    view.setCompoundDrawables(mHeadDrawable, null, null, null);
-                }else{
-                    view.setCompoundDrawables(null, null, null, null);
+                if(view != null){
+                    Bitmap bitmap = mSelectecAccount.getSkinFace();
+                    if(bitmap != null && !bitmap.isRecycled()) {
+                        mHeadDrawable = new BitmapDrawable(getResources(), bitmap);
+                        view.setCompoundDrawables(mHeadDrawable, null, null, null);
+                    }else{
+                        mHeadDrawable = null;
+                        view.setCompoundDrawables(null, null, null, null);
+                    }
+                    view.postProcessDrawables();
                 }
-                view.postProcessDrawables();
             }
-        }
-
-        if(oldBitmapDrawable != null){
-            oldBitmapDrawable.getBitmap().recycle();
         }
     }
 
     private class AccountAdapter extends ArrayAdapter<String> {
 
-        private final HashMap<String, Drawable> mImageCache = new HashMap<>();
+        private final HashMap<String, Bitmap> mImageCache = new HashMap<>();
         public AccountAdapter(@NonNull Context context, int resource, @NonNull String[] objects) {
             super(context, resource, objects);
+        }
+
+        public void clearCache() {
+            mImageCache.clear();
         }
 
         @Override
@@ -382,12 +401,18 @@ public class mcAccountSpinner extends AppCompatSpinner implements AdapterView.On
             }
             else {
                 String username = super.getItem(position);
-                Drawable accountHead = mImageCache.get(username);
-                if (accountHead == null){
-                    accountHead = new BitmapDrawable(parent.getResources(), MinecraftAccount.getSkinFace(username));
-                    mImageCache.put(username, accountHead);
+                Bitmap b = mImageCache.get(username);
+                if (b == null || b.isRecycled()){
+                    b = MinecraftAccount.getSkinFace(username);
+                    if (b != null && !b.isRecycled()) {
+                        mImageCache.put(username, b);
+                    }
                 }
-                textview.setCompoundDrawables(accountHead, null, null, null);
+                if (b != null && !b.isRecycled()) {
+                    textview.setCompoundDrawables(new BitmapDrawable(parent.getResources(), b), null, null, null);
+                } else {
+                    textview.setCompoundDrawables(null, null, null, null);
+                }
 
                 deleteButton.setVisibility(View.VISIBLE);
                 deleteButton.setOnClickListener(v -> {
