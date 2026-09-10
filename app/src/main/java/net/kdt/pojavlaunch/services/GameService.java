@@ -44,19 +44,26 @@ public class GameService extends Service {
                 new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),
                  PendingIntent.FLAG_IMMUTABLE);
 
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "channel_id")
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NotificationUtils.NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getString(R.string.lazy_service_default_title))
                 .setContentText(getString(R.string.notification_game_runs))
                 .setContentIntent(contentIntent)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel,  getString(R.string.notification_terminate), pendingKillIntent)
+                .addAction(0, getString(R.string.notification_terminate), pendingKillIntent)
                 .setSmallIcon(R.drawable.notif_icon)
+                .setOngoing(true)
                 .setNotificationSilent();
 
         Notification notification = notificationBuilder.build();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
-        } else {
-            startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification);
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
+            } else {
+                startForeground(NotificationUtils.NOTIFICATION_ID_GAME_SERVICE, notification);
+            }
+        } catch (Exception e) {
+            android.util.Log.e("GameService", "Failed to startForeground: " + e.getMessage(), e);
         }
         return START_NOT_STICKY; // non-sticky so android wont try restarting the game after the user uses the "Quit" button
     }

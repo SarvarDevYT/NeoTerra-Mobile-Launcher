@@ -58,6 +58,7 @@ public class PojavApplication extends Application {
 		
 		try {
 			super.onCreate();
+			Tools.buildNotificationChannel(this);
 			if(Tools.checkStorageRoot(this)){
 				// Implicitly initializes early constants and storage constants.
 				// Required to run the main activity properly.

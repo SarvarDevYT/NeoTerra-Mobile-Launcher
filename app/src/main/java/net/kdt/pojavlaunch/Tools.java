@@ -366,11 +366,26 @@ public final class Tools {
 
     public static void buildNotificationChannel(Context context){
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-        NotificationChannel channel = new NotificationChannel(
-                context.getString(R.string.notif_channel_id),
-                context.getString(R.string.notif_channel_name), NotificationManager.IMPORTANCE_DEFAULT);
-        NotificationManagerCompat manager = NotificationManagerCompat.from(context);
-        manager.createNotificationChannel(channel);
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) return;
+
+        String channelName = context.getString(R.string.notif_channel_name);
+
+        NotificationChannel primaryChannel = new NotificationChannel(
+                net.kdt.pojavlaunch.utils.NotificationUtils.NOTIFICATION_CHANNEL_ID,
+                channelName,
+                NotificationManager.IMPORTANCE_LOW);
+        primaryChannel.setDescription("NeoTerra Launcher Notifications");
+        primaryChannel.setShowBadge(false);
+        manager.createNotificationChannel(primaryChannel);
+
+        NotificationChannel legacyChannel = new NotificationChannel(
+                "channel_id",
+                channelName,
+                NotificationManager.IMPORTANCE_LOW);
+        legacyChannel.setDescription("NeoTerra Launcher Notifications");
+        legacyChannel.setShowBadge(false);
+        manager.createNotificationChannel(legacyChannel);
     }
     public static void disableSplash(File dir) {
         File configDir = new File(dir, "config");

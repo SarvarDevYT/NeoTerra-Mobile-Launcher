@@ -12,6 +12,7 @@ import net.kdt.pojavlaunch.R;
 
 public class NotificationUtils {
 
+    public static final String NOTIFICATION_CHANNEL_ID = "neoterra_channel";
     public static final int NOTIFICATION_ID_PROGRESS_SERVICE = 1;
     public static final int NOTIFICATION_ID_GAME_SERVICE = 2;
     public static final int NOTIFICATION_ID_DOWNLOAD_LISTENER = 3;
@@ -30,7 +31,7 @@ public class NotificationUtils {
                 Build.VERSION.SDK_INT >=23 ? PendingIntent.FLAG_IMMUTABLE : 0);
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, context.getString(R.string.notif_channel_id));
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
         if(contentTitle != -1) notificationBuilder.setContentTitle(context.getString(contentTitle));
         if(contentText != -1) notificationBuilder.setContentText(context.getString(contentText));
         if(actionIntent != null) notificationBuilder.setContentIntent(pendingIntent);

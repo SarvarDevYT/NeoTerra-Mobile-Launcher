@@ -47,10 +47,11 @@ public class ProgressService extends Service implements TaskCountListener {
         killIntent.putExtra("kill", true);
         PendingIntent pendingKillIntent = PendingIntent.getService(this, NotificationUtils.PENDINGINTENT_CODE_KILL_PROGRESS_SERVICE
                 , killIntent, Build.VERSION.SDK_INT >=23 ? PendingIntent.FLAG_IMMUTABLE : 0);
-        mNotificationBuilder = new NotificationCompat.Builder(this, "channel_id")
+        mNotificationBuilder = new NotificationCompat.Builder(this, NotificationUtils.NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(getString(R.string.lazy_service_default_title))
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel,  getString(R.string.notification_terminate), pendingKillIntent)
+                .addAction(0, getString(R.string.notification_terminate), pendingKillIntent)
                 .setSmallIcon(R.drawable.notif_icon)
+                .setOngoing(true)
                 .setNotificationSilent();
     }
 
@@ -67,10 +68,16 @@ public class ProgressService extends Service implements TaskCountListener {
         Log.d("ProgressService", "Started!");
         mNotificationBuilder.setContentText(getString(R.string.progresslayout_tasks_in_progress, ProgressKeeper.getTaskCount()));
         Notification notification = mNotificationBuilder.build();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(NotificationUtils.NOTIFICATION_ID_PROGRESS_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
-        } else {
-            startForeground(NotificationUtils.NOTIFICATION_ID_PROGRESS_SERVICE, notification);
+        try {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(NotificationUtils.NOTIFICATION_ID_PROGRESS_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(NotificationUtils.NOTIFICATION_ID_PROGRESS_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST);
+            } else {
+                startForeground(NotificationUtils.NOTIFICATION_ID_PROGRESS_SERVICE, notification);
+            }
+        } catch (Exception e) {
+            Log.e("ProgressService", "Failed to startForeground: " + e.getMessage(), e);
         }
         if(ProgressKeeper.getTaskCount() < 1) stopSelf();
         else ProgressKeeper.addTaskCountListener(this, false);
