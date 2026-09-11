@@ -49,7 +49,7 @@
                 android:id="@+id/discord_button"
                 style="@style/LauncherMenuButton.Universal"
                 android:layout_width="0dp"
-                android:drawableStart="@drawable/ic_discord"
+                android:drawableStart="@drawable/ic_telegram"
                 android:text="@string/mcl_button_discord"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

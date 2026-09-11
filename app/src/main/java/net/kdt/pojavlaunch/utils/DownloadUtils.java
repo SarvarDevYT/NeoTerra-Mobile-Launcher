@@ -15,7 +15,7 @@ import org.apache.commons.io.*;
 @SuppressWarnings("IOStreamConstructor")
 public class DownloadUtils {
     public static final String USER_AGENT = Tools.APP_NAME;
-    private static final int TIME_OUT = 10000;
+    private static final int TIME_OUT = 30000;
 
     public static void download(String url, OutputStream os) throws IOException {
         download(new URL(url), os);
@@ -23,12 +23,14 @@ public class DownloadUtils {
 
     public static void download(URL url, OutputStream os) throws IOException {
         InputStream is = null;
+        HttpURLConnection conn = null;
         try {
             // System.out.println("Connecting: " + url.toString());
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestProperty("User-Agent", USER_AGENT);
             conn.setConnectTimeout(TIME_OUT);
             conn.setReadTimeout(TIME_OUT);
+            conn.setInstanceFollowRedirects(true);
             conn.setDoInput(true);
             conn.connect();
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -46,6 +48,11 @@ public class DownloadUtils {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+            if (conn != null) {
+                try {
+                    conn.disconnect();
+                } catch (Exception ignored) {}
             }
         }
     }
@@ -67,26 +74,49 @@ public class DownloadUtils {
     public static void downloadFileMonitored(String urlInput, File outputFile, @Nullable byte[] buffer,
                                              Tools.DownloaderFeedback monitor) throws IOException {
         FileUtils.ensureParentDirectory(outputFile);
+        File tempFile = new File(outputFile.getAbsolutePath() + ".part");
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(urlInput).openConnection();
-        conn.setConnectTimeout(TIME_OUT);
-        conn.setReadTimeout(TIME_OUT);
-        InputStream readStr = conn.getInputStream();
-        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-            int current;
-            int overall = 0;
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(urlInput).openConnection();
+            conn.setRequestProperty("User-Agent", USER_AGENT);
+            conn.setConnectTimeout(TIME_OUT);
+            conn.setReadTimeout(TIME_OUT);
+            conn.setInstanceFollowRedirects(true);
+            int code = conn.getResponseCode();
+            if (code < 200 || code >= 300) {
+                throw new IOException("Server returned HTTP " + code + " for " + urlInput);
+            }
+
             int length = conn.getContentLength();
-
             if (buffer == null) buffer = new byte[65535];
 
-            while ((current = readStr.read(buffer)) != -1) {
-                overall += current;
-                fos.write(buffer, 0, current);
-                monitor.updateProgress(overall, length);
+            try (InputStream readStr = conn.getInputStream();
+                 FileOutputStream fos = new FileOutputStream(tempFile)) {
+                int current;
+                int overall = 0;
+                while ((current = readStr.read(buffer)) != -1) {
+                    overall += current;
+                    fos.write(buffer, 0, current);
+                    monitor.updateProgress(overall, length);
+                }
+                fos.flush();
             }
-            conn.disconnect();
+
+            if (outputFile.exists()) outputFile.delete();
+            if (!tempFile.renameTo(outputFile)) {
+                org.apache.commons.io.FileUtils.copyFile(tempFile, outputFile);
+                tempFile.delete();
+            }
         } catch (IOException e) {
-            throw new IOException("Unable to download from " + urlInput, e);
+            if (tempFile.exists()) tempFile.delete();
+            throw new IOException("Unable to download from " + urlInput + ": " + e.getMessage(), e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.disconnect();
+                } catch (Exception ignored) {}
+            }
         }
     }
 
@@ -141,23 +171,46 @@ public class DownloadUtils {
     }
 
     public static <T> T ensureSha1(File outputFile, @Nullable String sha1, Callable<T> downloadFunction) throws IOException {
-        // Skip if needed
-        if(sha1 == null) {
-            // If the file exists and we don't know it's SHA1, don't try to redownload it.
-            if(outputFile.exists()) return null;
-            else return downloadFile(downloadFunction);
+        if (sha1 != null && verifyFile(outputFile, sha1)) {
+            return null;
+        } else if (sha1 == null && outputFile.exists() && outputFile.length() > 0) {
+            return null;
         }
 
-        int attempts = 0;
-        boolean fileOkay = verifyFile(outputFile, sha1);
-        T result = null;
-        while (attempts < 5 && !fileOkay){
-            attempts++;
-            downloadFile(downloadFunction);
-            fileOkay = verifyFile(outputFile, sha1);
+        int maxAttempts = 4;
+        IOException lastException = null;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                T result = downloadFunction.call();
+                if (sha1 == null || verifyFile(outputFile, sha1)) {
+                    return result;
+                }
+                Log.w("DownloadUtils", "SHA1 verification failed for " + outputFile.getName() + " on attempt " + attempt);
+            } catch (Exception e) {
+                if (e instanceof IOException) {
+                    lastException = (IOException) e;
+                } else {
+                    lastException = new IOException(e);
+                }
+                Log.w("DownloadUtils", "Download attempt " + attempt + "/" + maxAttempts + " failed for " + outputFile.getName() + ": " + e.getMessage());
+            }
+
+            if (outputFile.exists() && (sha1 != null && !verifyFile(outputFile, sha1))) {
+                outputFile.delete();
+            }
+
+            if (attempt < maxAttempts) {
+                try {
+                    Thread.sleep(attempt * 600L);
+                } catch (InterruptedException ignored) {}
+            }
         }
-        if(!fileOkay) throw new SHA1VerificationException("SHA1 verifcation failed after 5 download attempts");
-        return result;
+
+        if (lastException != null) {
+            throw lastException;
+        }
+        throw new SHA1VerificationException("SHA1 verification failed after " + maxAttempts + " download attempts for " + outputFile.getName());
     }
 
     /**

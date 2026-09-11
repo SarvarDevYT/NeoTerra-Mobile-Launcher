@@ -105,7 +105,7 @@ public final class Tools {
 
     public static final Gson GLOBAL_GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    public static final String URL_HOME = "https://neoterra.uz";
+    public static final String URL_HOME = "https://site.neoterra.uz";
     public static boolean sConnectNeoTerraServer = false;
     public static final String NEOTERRA_SERVER_IP = "play.neoterra.uz";
     public static final int NEOTERRA_SERVER_PORT = 25565;

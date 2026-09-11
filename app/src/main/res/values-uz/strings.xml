@@ -356,7 +356,7 @@ Tugmani tahrirlash, o\'lchamini o\'zgartirish yoki o\'chirish uchun ustiga bosin
     <string name="mcl_button_discord">Telegram Hamjamiyat</string>
     <string name="ltw_render_distance_warning_msg">Videokartangiz Sodium modisiz 7 chunkdan ortiq masofani chizishga qiynaladi.</string>
     <string name="mcl_button_open_directory">O\'yin papkasini ochish</string>
-    <string name="discord_invite" translatable="false">https://t.me/NeoTerraServer</string>
+    <string name="discord_invite" translatable="false">https://t.me/NeoTerraUz</string>
     <string name="local_login_bad_username_title">Noto\'g\'ri o\'yinchi nomi</string>
     <string name="local_login_bad_username_text">O\'yinchi nomi 3 tadan 16 tagacha belgidan iborat bo\'lishi va faqat lotin harflari, raqamlar yoki tag chiziqdan iborat bo\'lishi kerak.</string>
     <string name="quick_setting_title">Tezkor sozlamalar</string>
