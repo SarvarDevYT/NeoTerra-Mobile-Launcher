@@ -20,9 +20,13 @@ public class SelectAuthFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        Button mNeoterraButton = view.findViewById(R.id.button_neoterra_authentication);
         Button mMicrosoftButton = view.findViewById(R.id.button_microsoft_authentication);
         Button mLocalButton = view.findViewById(R.id.button_local_authentication);
 
+        if (mNeoterraButton != null) {
+            mNeoterraButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), NeoTerraLoginFragment.class, NeoTerraLoginFragment.TAG, null));
+        }
         mMicrosoftButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), MicrosoftLoginFragment.class, MicrosoftLoginFragment.TAG, null));
         mLocalButton.setOnClickListener(v -> Tools.swapFragment(requireActivity(), LocalLoginFragment.class, LocalLoginFragment.TAG, null));
     }

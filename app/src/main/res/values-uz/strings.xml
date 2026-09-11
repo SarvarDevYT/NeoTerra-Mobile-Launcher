@@ -367,6 +367,13 @@ Tugmani tahrirlash, o\'lchamini o\'zgartirish yoki o\'chirish uchun ustiga bosin
     <string name="bta_installer_nightly_versions">Tungi (Nightly) versiyalar</string>
     <string name="newdl_extracting_native_libraries" formatted="false">Tizim kutubxonalari ochilmoqda...</string>
     <string name="toast_not_available_demo">Ushbu funksiya demo rejimida ishlamaydi</string>
-    <string name="login_local_title">Offline hisob bilan kirish</string>
-    <string name="select_auth_method">Hisob turini tanlang</string>
+    <string name="login_microsoft">Microsoft Hisobi</string>
+    <string name="auth_method_neoterra">NeoTerra Hisobi (Sayt orqali)</string>
+    <string name="neoterra_login_title">NeoTerra Hisobi bilan kirish</string>
+    <string name="neoterra_login_hint_id">Email yoki Minecraft niki</string>
+    <string name="neoterra_login_hint_password">Parol</string>
+    <string name="neoterra_login_button">Kirish</string>
+    <string name="neoterra_register_button">Saytda ro\'yxatdan o\'tish</string>
+    <string name="neoterra_login_empty">Iltimos, login va parolni kiriting!</string>
+    <string name="neoterra_login_failed">Kirishda xatolik yuz berdi</string>
 </resources>

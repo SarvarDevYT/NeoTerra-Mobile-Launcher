@@ -47,7 +47,6 @@ public class MainMenuFragment extends Fragment {
         Button mOpenDirectoryButton = view.findViewById(R.id.open_files_button);
 
         ImageButton mEditProfileButton = view.findViewById(R.id.edit_profile_button);
-        Button mNeoterraServerButton = view.findViewById(R.id.neoterra_server_button);
         Button mPlayButton = view.findViewById(R.id.play_button);
         mVersionSpinner = view.findViewById(R.id.mc_version_spinner);
 
@@ -60,13 +59,6 @@ public class MainMenuFragment extends Fragment {
             return true;
         });
         mEditProfileButton.setOnClickListener(v -> mVersionSpinner.openProfileEditor(requireActivity()));
-
-        if(mNeoterraServerButton != null) {
-            mNeoterraServerButton.setOnClickListener(v -> {
-                Tools.sConnectNeoTerraServer = true;
-                ExtraCore.setValue(ExtraConstants.LAUNCH_GAME, true);
-            });
-        }
 
         mPlayButton.setOnClickListener(v -> {
             Tools.sConnectNeoTerraServer = false;

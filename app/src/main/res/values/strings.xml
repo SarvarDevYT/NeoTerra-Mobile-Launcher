@@ -437,4 +437,12 @@
     <string name="login_microsoft">Microsoft Account</string>
     <string name="select_auth_method">Select Login Method</string>
     <string name="login_error_invalid_username">Invalid username</string>
+    <string name="auth_method_neoterra">NeoTerra Account (Website)</string>
+    <string name="neoterra_login_title">Login with NeoTerra Account</string>
+    <string name="neoterra_login_hint_id">Email or Minecraft Username</string>
+    <string name="neoterra_login_hint_password">Password</string>
+    <string name="neoterra_login_button">Login</string>
+    <string name="neoterra_register_button">Register on Website</string>
+    <string name="neoterra_login_empty">Please enter your username/email and password!</string>
+    <string name="neoterra_login_failed">Login failed</string>
 </resources>

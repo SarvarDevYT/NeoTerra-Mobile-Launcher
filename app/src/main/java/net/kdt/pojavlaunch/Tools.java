@@ -208,6 +208,47 @@ public final class Tools {
         switchDemo(isDemoProfile(ctx));
     }
 
+    public static void ensureCustomSkinLoader(String username) {
+        try {
+            if (DIR_GAME_NEW == null) return;
+            File cslDir = new File(DIR_GAME_NEW, "CustomSkinLoader");
+            File texturesDir = new File(cslDir, "LocalSkins/textures");
+            texturesDir.mkdirs();
+
+            File configFile = new File(cslDir, "CustomSkinLoader.json");
+            String cslConfig = "{\n" +
+                    "  \"version\": \"15.0.1\",\n" +
+                    "  \"enable\": true,\n" +
+                    "  \"loadlist\": [\n" +
+                    "    {\n" +
+                    "      \"name\": \"NeoTerra\",\n" +
+                    "      \"type\": \"CustomSkinAPI\",\n" +
+                    "      \"root\": \"https://site.neoterra.uz/api/launcher/skins/\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"name\": \"Elyby\",\n" +
+                    "      \"type\": \"ElybyAPI\"\n" +
+                    "    },\n" +
+                    "    {\n" +
+                    "      \"name\": \"Mojang\",\n" +
+                    "      \"type\": \"MojangAPI\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+            write(configFile.getAbsolutePath(), cslConfig);
+
+            if (username != null && !username.isEmpty()) {
+                File cachedSkin = new File(DIR_CACHE, username + "_rawskin.png");
+                File destSkin = new File(texturesDir, username + ".png");
+                if (cachedSkin.exists() && cachedSkin.length() > 300) {
+                    org.apache.commons.io.FileUtils.copyFile(cachedSkin, destSkin);
+                }
+            }
+        } catch (Exception e) {
+            Log.w("SkinSync", "Failed to ensure CustomSkinLoader: " + e.getMessage());
+        }
+    }
+
     /**
      * Optimization mods based on Sodium can mitigate the render distance issue. Check if Sodium
      * or its derivative is currently installed to skip the render distance check.
