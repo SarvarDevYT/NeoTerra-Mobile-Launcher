@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="control_button_color">#4D2563EB</color>
-    <color name="control_button_pressed_color">#803B82F6</color>
+    <color name="control_button_color">#4D7C3AED</color>
+    <color name="control_button_pressed_color">#808B5CF6</color>
 
-    <color name="minebutton_color">#2563EB</color>
-    <color name="background_app">#0B0F19</color>
-    <color name="divider">@color/background_overlay</color>
+    <color name="minebutton_color">#10B981</color>
+    <color name="purple_brand">#8B5CF6</color>
+    <color name="purple_brand_dark">#7C3AED</color>
+    <color name="emerald_brand">#10B981</color>
+    <color name="emerald_brand_dark">#059669</color>
+
+    <color name="background_app">#07090E</color>
+    <color name="divider">#26FFFFFF</color>
     <color name="background_overlay">#1E293B</color>
-    <color name="background_status_bar">#080B13</color>
-    <color name="background_bottom_bar">#0F172A</color>
+    <color name="background_status_bar">#E607090E</color>
+    <color name="background_bottom_bar">#F207090E</color>
 
     <color name="primary_text">#FFFFFF</color>
     <color name="secondary_text">#94A3B8</color>
+    <color name="card_border">#33A855F7</color>
 </resources>

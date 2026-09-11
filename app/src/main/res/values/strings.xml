@@ -445,4 +445,10 @@
     <string name="neoterra_register_button">Register on Website</string>
     <string name="neoterra_login_empty">Please enter your username/email and password!</string>
     <string name="neoterra_login_failed">Login failed</string>
+    <string name="neoterra_server_title">NeoTerra Server: ONLINE 🟢</string>
+    <string name="neoterra_server_ip">play.neoterra.uz</string>
+    <string name="neoterra_server_sub">Java 1.7.10 - 1.21.x</string>
+    <string name="neoterra_server_ip_copied">Server IP copied: play.neoterra.uz</string>
+    <string name="neoterra_quick_tools">Quick Tools</string>
+    <string name="neoterra_tagline">Advanced Minecraft Java Launcher</string>
 </resources>
