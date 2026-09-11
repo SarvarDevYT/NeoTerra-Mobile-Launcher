@@ -87,7 +87,14 @@ public class MultiRTUtils {
         File ftIn = new File(dest, libFolder + "/libfreetype.so.6");
         File ftOut = new File(dest, libFolder + "/libfreetype.so");
         if (ftIn.exists() && (!ftOut.exists() || ftIn.length() != ftOut.length())) {
-            if(!ftIn.renameTo(ftOut)) throw new IOException("Failed to rename freetype");
+            if(!ftIn.renameTo(ftOut)) {
+                try {
+                    FileUtils.copyFile(ftIn, ftOut);
+                    ftIn.delete();
+                } catch (Exception e) {
+                    Log.w("MultiRTUtils", "Failed to copy libfreetype", e);
+                }
+            }
         }
 
         // Refresh libraries
@@ -201,13 +208,21 @@ public class MultiRTUtils {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private static void copyDummyNativeLib(String name, File dest, String libFolder) throws IOException {
-        File fileLib = new File(dest, "/"+libFolder + "/" + name);
-        FileInputStream is = new FileInputStream(new File(NATIVE_LIB_DIR, name));
-        FileOutputStream os = new FileOutputStream(fileLib);
-        IOUtils.copy(is, os);
-        is.close();
-        os.close();
+    private static void copyDummyNativeLib(String name, File dest, String libFolder) {
+        try {
+            File srcFile = new File(NATIVE_LIB_DIR, name);
+            if (!srcFile.exists()) {
+                Log.w("MultiRTUtils", "Dummy native lib not found (skipping): " + name);
+                return;
+            }
+            File fileLib = new File(dest, "/" + libFolder + "/" + name);
+            try (FileInputStream is = new FileInputStream(srcFile);
+                 FileOutputStream os = new FileOutputStream(fileLib)) {
+                IOUtils.copy(is, os);
+            }
+        } catch (Exception e) {
+            Log.w("MultiRTUtils", "Failed to copy dummy native lib: " + name, e);
+        }
     }
 
     private static void installRuntimeNamedNoRemove(InputStream runtimeInputStream, File dest) throws IOException {

@@ -76,12 +76,12 @@ public class NewJREUtil {
         for (String path : possibleArchives) {
             try (InputStream is = assetManager.open(path)) {
                 Log.i(TAG, "Unpacking bundled runtime from asset: " + path);
-                ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java 17 o'rnatilmoqda...");
+                ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java " + internalRuntime.majorVersion + " o'rnatilmoqda...");
                 MultiRTUtils.installRuntimeNamed(nativeLibDir, is, internalRuntime.name);
                 MultiRTUtils.postPrepare(internalRuntime.name);
                 return true;
-            } catch (IOException ignored) {
-                // Not found under this asset path
+            } catch (Exception e) {
+                Log.d(TAG, "Archive not opened: " + path + " (" + e.getMessage() + ")");
             }
         }
 
@@ -94,12 +94,13 @@ public class NewJREUtil {
                 version = Tools.read(assetManager.open(internalRuntime.path + "/version"));
             } catch (Exception ignored) {}
 
-            ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java 17 o'rnatilmoqda...");
+            Log.i(TAG, "Unpacking binpack runtime from: " + internalRuntime.path);
+            ProgressLayout.setProgress(ProgressLayout.DOWNLOAD_MINECRAFT, 0, "Java " + internalRuntime.majorVersion + " o'rnatilmoqda...");
             MultiRTUtils.installRuntimeNamedBinpack(universalIs, binIs, internalRuntime.name, version);
             MultiRTUtils.postPrepare(internalRuntime.name);
             return true;
-        } catch (IOException ignored) {
-            // Binpack not found
+        } catch (Exception e) {
+            Log.w(TAG, "Binpack install failed for " + internalRuntime.name, e);
         }
 
         return false;

@@ -96,6 +96,10 @@ android {
         abortOnError false
     }
 
+    aaptOptions {
+        noCompress 'xz', 'mp4'
+    }
+
     signingConfigs {
         customDebug {
             storeFile file("debug.keystore")
