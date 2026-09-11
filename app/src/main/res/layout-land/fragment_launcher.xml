@@ -223,6 +223,29 @@
                     android:gravity="center_vertical|start" />
             </LinearLayout>
 
+            <!-- Quick Tools Grid: Row 3 (Turnirlar) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/_6sdp">
+
+                <Button
+                    android:id="@+id/tournaments_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/_36sdp"
+                    android:background="@drawable/button_glass_action"
+                    android:drawableStart="@drawable/ic_trophy"
+                    android:drawablePadding="@dimen/_6sdp"
+                    android:paddingHorizontal="@dimen/_8sdp"
+                    android:text="@string/neoterra_tournaments"
+                    android:textColor="#FBBF24"
+                    android:textSize="@dimen/_9ssp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:gravity="center_vertical|start" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

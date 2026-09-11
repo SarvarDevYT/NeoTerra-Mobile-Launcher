@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.kdt.mcgui.mcVersionSpinner;
 
 import net.kdt.pojavlaunch.CustomControlsActivity;
+import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.R;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.extra.ExtraConstants;
@@ -54,6 +56,8 @@ public class MainMenuFragment extends Fragment {
         mVersionSpinner = view.findViewById(R.id.mc_version_spinner);
 
         View mServerCard = view.findViewById(R.id.neoterra_server_card);
+        TextView mServerTitle = view.findViewById(R.id.server_title_text);
+        TextView mServerIp = view.findViewById(R.id.server_ip_text);
         if (mServerCard != null) {
             mServerCard.setOnClickListener(v -> {
                 try {
@@ -67,6 +71,41 @@ public class MainMenuFragment extends Fragment {
                     e.printStackTrace();
                 }
             });
+
+            PojavApplication.sExecutorService.execute(() -> {
+                try {
+                    java.net.URL url = new java.net.URL("https://site.neoterra.uz/api/server/status");
+                    java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(6000);
+                    conn.setReadTimeout(6000);
+                    conn.setRequestProperty("User-Agent", "NeoTerra-Mobile-Launcher");
+                    if (conn.getResponseCode() == 200) {
+                        String jsonStr = org.apache.commons.io.IOUtils.toString(conn.getInputStream(), java.nio.charset.StandardCharsets.UTF_8);
+                        org.json.JSONObject obj = new org.json.JSONObject(jsonStr);
+                        boolean online = obj.optBoolean("online", false);
+                        org.json.JSONObject players = obj.optJSONObject("players");
+                        int onlineCount = players != null ? players.optInt("online", 0) : 0;
+                        int maxCount = players != null ? players.optInt("max", 100) : 100;
+                        Tools.runOnUiThread(() -> {
+                            try {
+                                if (isAdded() && mServerTitle != null && mServerIp != null) {
+                                    if (online) {
+                                        mServerTitle.setText(getString(R.string.neoterra_server_title) + " (" + onlineCount + "/" + maxCount + ")");
+                                        mServerIp.setText("🟢 Onlayn · IP: play.neoterra.uz");
+                                    } else {
+                                        mServerIp.setText("🔴 Oflayn · IP: play.neoterra.uz");
+                                    }
+                                }
+                            } catch (Exception ignored) {}
+                        });
+                    }
+                } catch (Exception ignored) {}
+            });
+        }
+
+        View mTournamentsButton = view.findViewById(R.id.tournaments_button);
+        if (mTournamentsButton != null) {
+            mTournamentsButton.setOnClickListener(v -> Tools.openURL(requireActivity(), "https://site.neoterra.uz/tournaments"));
         }
 
         mNewsButton.setOnClickListener(v -> Tools.openURL(requireActivity(), Tools.URL_HOME));

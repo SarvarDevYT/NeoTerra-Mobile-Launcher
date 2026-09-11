@@ -155,6 +155,10 @@ public class LauncherActivity extends BaseActivity {
             }
         }
 
+        if (mAccountSpinner.getSelectedAccount() != null) {
+            Tools.ensureCustomSkinLoader(mAccountSpinner.getSelectedAccount().username);
+        }
+
         new MinecraftDownloader().start(
                 this,
                 mcVersion,

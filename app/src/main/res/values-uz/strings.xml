@@ -381,5 +381,6 @@ Tugmani tahrirlash, o\'lchamini o\'zgartirish yoki o\'chirish uchun ustiga bosin
     <string name="neoterra_server_sub">Minecraft Java 1.7.10 - 1.21.x</string>
     <string name="neoterra_server_ip_copied">Server IP nusxalandi: play.neoterra.uz</string>
     <string name="neoterra_quick_tools">Tezkor Asboblar</string>
+    <string name="neoterra_tournaments">🏆 Turnirlar</string>
     <string name="neoterra_tagline">O\'zbekistondagi eng ilg\'or Minecraft Launcher</string>
 </resources>

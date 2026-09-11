@@ -117,7 +117,7 @@ public final class Tools {
     public static int DEVICE_ARCHITECTURE;
     public static final String LAUNCHERPROFILES_RTPREFIX = "pojav://";
 
-    // New since 3.3.1
+    public static Context APP_CONTEXT;
     public static String DIR_ACCOUNT_NEW;
     public static String DIR_GAME_HOME = Environment.getExternalStorageDirectory().getAbsolutePath() + "/games/PojavLauncher";
     public static String DIR_GAME_NEW;
@@ -181,6 +181,7 @@ public final class Tools {
      * @param ctx the context for initialization.
      */
     public static void initEarlyConstants(Context ctx) {
+        APP_CONTEXT = ctx.getApplicationContext();
         DIR_CACHE = ctx.getCacheDir();
         DIR_DATA = ctx.getFilesDir().getParent();
         MULTIRT_HOME = DIR_DATA + "/runtimes";
@@ -242,6 +243,34 @@ public final class Tools {
                 File destSkin = new File(texturesDir, username + ".png");
                 if (cachedSkin.exists() && cachedSkin.length() > 300) {
                     org.apache.commons.io.FileUtils.copyFile(cachedSkin, destSkin);
+                }
+            }
+
+            // Automatic CustomSkinLoader mod injection into .minecraft/mods
+            File modsDir = new File(DIR_GAME_NEW, "mods");
+            if (!modsDir.exists()) {
+                modsDir.mkdirs();
+            }
+            boolean hasCslMod = false;
+            File[] existingMods = modsDir.listFiles();
+            if (existingMods != null) {
+                for (File f : existingMods) {
+                    if (f.isFile() && f.getName().toLowerCase().contains("customskinloader")) {
+                        hasCslMod = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasCslMod && APP_CONTEXT != null) {
+                File targetMod = new File(modsDir, "CustomSkinLoader_Universal-15.0.1.jar");
+                try (java.io.InputStream in = APP_CONTEXT.getAssets().open("components/CustomSkinLoader.jar");
+                     java.io.OutputStream out = new java.io.FileOutputStream(targetMod)) {
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, read);
+                    }
+                    Log.i("SkinSync", "Installed CustomSkinLoader mod to: " + targetMod.getAbsolutePath());
                 }
             }
         } catch (Exception e) {
