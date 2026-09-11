@@ -6,13 +6,24 @@
     android:layout_height="match_parent"
     android:background="@color/background_app">
 
-    <!-- Cinematic Landscape Wallpaper from PC Launcher -->
+    <!-- Cinematic Landscape Wallpaper (Poster Fallback) from PC Launcher -->
     <ImageView
         android:id="@+id/main_background_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:src="@drawable/neoterra_bg_main"
         android:scaleType="centerCrop"
+        android:translationZ="-3dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Cinematic Live Video Background from PC Launcher -->
+    <TextureView
+        android:id="@+id/main_background_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:translationZ="-2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

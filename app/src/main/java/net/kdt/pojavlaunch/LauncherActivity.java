@@ -5,8 +5,14 @@ import android.Manifest;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -66,6 +72,11 @@ public class LauncherActivity extends BaseActivity {
     private ProgressServiceKeeper mProgressServiceKeeper;
     private ModloaderInstallTracker mInstallTracker;
     private NotificationManager mNotificationManager;
+    private TextureView mBackgroundVideoView;
+    private Surface mBackgroundSurface;
+    private MediaPlayer mBackgroundMediaPlayer;
+    private int mBackgroundVideoWidth = 0;
+    private int mBackgroundVideoHeight = 0;
 
     /* Allows to switch from one button "type" to another */
     private final FragmentManager.FragmentLifecycleCallbacks mFragmentCallbackListener = new FragmentManager.FragmentLifecycleCallbacks() {
@@ -234,6 +245,13 @@ public class LauncherActivity extends BaseActivity {
         super.onResume();
         ContextExecutor.setActivity(this);
         mInstallTracker.attach();
+        if (mBackgroundMediaPlayer != null && !mBackgroundMediaPlayer.isPlaying()) {
+            try {
+                mBackgroundMediaPlayer.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -241,6 +259,13 @@ public class LauncherActivity extends BaseActivity {
         super.onPause();
         ContextExecutor.clearActivity();
         mInstallTracker.detach();
+        if (mBackgroundMediaPlayer != null && mBackgroundMediaPlayer.isPlaying()) {
+            try {
+                mBackgroundMediaPlayer.pause();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -260,6 +285,12 @@ public class LauncherActivity extends BaseActivity {
         ExtraCore.removeExtraListenerFromValue(ExtraConstants.LAUNCH_GAME, mLaunchGameListener);
 
         getSupportFragmentManager().unregisterFragmentLifecycleCallbacks(mFragmentCallbackListener);
+
+        stopBackgroundVideo();
+        if (mBackgroundSurface != null) {
+            mBackgroundSurface.release();
+            mBackgroundSurface = null;
+        }
     }
 
     /** Custom implementation to feel more natural when a backstack isn't present */
@@ -356,5 +387,101 @@ public class LauncherActivity extends BaseActivity {
         mSettingsButton = findViewById(R.id.setting_button);
         mAccountSpinner = findViewById(R.id.account_spinner);
         mProgressLayout = findViewById(R.id.progress_layout);
+        mBackgroundVideoView = findViewById(R.id.main_background_video);
+        setupBackgroundVideo();
+    }
+
+    private void setupBackgroundVideo() {
+        if (mBackgroundVideoView == null) return;
+        mBackgroundVideoView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int width, int height) {
+                mBackgroundSurface = new Surface(surfaceTexture);
+                startBackgroundVideo(width, height);
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int width, int height) {
+                if (mBackgroundVideoWidth > 0 && mBackgroundVideoHeight > 0) {
+                    updateBackgroundVideoTransform(width, height, mBackgroundVideoWidth, mBackgroundVideoHeight);
+                }
+            }
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
+                stopBackgroundVideo();
+                if (mBackgroundSurface != null) {
+                    mBackgroundSurface.release();
+                    mBackgroundSurface = null;
+                }
+                return true;
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
+            }
+        });
+    }
+
+    private void startBackgroundVideo(int width, int height) {
+        if (mBackgroundSurface == null || !mBackgroundSurface.isValid()) return;
+        try {
+            if (mBackgroundMediaPlayer == null) {
+                mBackgroundMediaPlayer = new MediaPlayer();
+            } else {
+                mBackgroundMediaPlayer.reset();
+            }
+            mBackgroundMediaPlayer.setSurface(mBackgroundSurface);
+            mBackgroundMediaPlayer.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.neoterra_bg));
+            mBackgroundMediaPlayer.setLooping(true);
+            mBackgroundMediaPlayer.setVolume(0f, 0f);
+            mBackgroundMediaPlayer.setOnVideoSizeChangedListener((mp, vWidth, vHeight) -> {
+                mBackgroundVideoWidth = vWidth;
+                mBackgroundVideoHeight = vHeight;
+                if (mBackgroundVideoView != null) {
+                    updateBackgroundVideoTransform(mBackgroundVideoView.getWidth(), mBackgroundVideoView.getHeight(), vWidth, vHeight);
+                }
+            });
+            mBackgroundMediaPlayer.setOnPreparedListener(mp -> {
+                mBackgroundVideoWidth = mp.getVideoWidth();
+                mBackgroundVideoHeight = mp.getVideoHeight();
+                if (mBackgroundVideoView != null) {
+                    updateBackgroundVideoTransform(mBackgroundVideoView.getWidth(), mBackgroundVideoView.getHeight(), mBackgroundVideoWidth, mBackgroundVideoHeight);
+                }
+                mp.start();
+            });
+            mBackgroundMediaPlayer.prepareAsync();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateBackgroundVideoTransform(int viewWidth, int viewHeight, int videoWidth, int videoHeight) {
+        if (mBackgroundVideoView == null || viewWidth <= 0 || viewHeight <= 0 || videoWidth <= 0 || videoHeight <= 0) return;
+        Matrix matrix = new Matrix();
+        float sx = (float) viewWidth / (float) videoWidth;
+        float sy = (float) viewHeight / (float) videoHeight;
+        float scale = Math.max(sx, sy);
+        float scaledWidth = videoWidth * scale;
+        float scaledHeight = videoHeight * scale;
+        float dx = (viewWidth - scaledWidth) / 2f;
+        float dy = (viewHeight - scaledHeight) / 2f;
+        matrix.setScale(scale, scale);
+        matrix.postTranslate(dx, dy);
+        mBackgroundVideoView.setTransform(matrix);
+    }
+
+    private void stopBackgroundVideo() {
+        if (mBackgroundMediaPlayer != null) {
+            try {
+                if (mBackgroundMediaPlayer.isPlaying()) {
+                    mBackgroundMediaPlayer.stop();
+                }
+                mBackgroundMediaPlayer.release();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            mBackgroundMediaPlayer = null;
+        }
     }
 }
