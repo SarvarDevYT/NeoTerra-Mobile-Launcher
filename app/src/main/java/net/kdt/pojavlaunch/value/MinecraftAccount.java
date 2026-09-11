@@ -37,7 +37,7 @@ public class MinecraftAccount {
 
         // 1. Try NeoTerra website skin first
         try {
-            String siteSkinUrl = "https://site.neoterra.uz/uploads/skins/" + username.toLowerCase() + ".png";
+            String siteSkinUrl = "https://site.neoterra.uz/api/launcher/skins/" + username.toLowerCase() + ".png";
             Tools.downloadFile(siteSkinUrl, tempSkin.getAbsolutePath());
             if (processRawSkin(tempSkin, skinFile)) {
                 Log.i("SkinLoader", "NeoTerra website skin loaded for " + username);
@@ -45,7 +45,17 @@ public class MinecraftAccount {
                 return;
             }
         } catch (Exception e) {
-            Log.d("SkinLoader", "NeoTerra site check: " + e.getMessage());
+            try {
+                String siteSkinUrl = "https://site.neoterra.uz/uploads/skins/" + username.toLowerCase() + ".png";
+                Tools.downloadFile(siteSkinUrl, tempSkin.getAbsolutePath());
+                if (processRawSkin(tempSkin, skinFile)) {
+                    Log.i("SkinLoader", "NeoTerra website skin loaded (fallback) for " + username);
+                    Tools.ensureCustomSkinLoader(username);
+                    return;
+                }
+            } catch (Exception ex) {
+                Log.d("SkinLoader", "NeoTerra site check: " + ex.getMessage());
+            }
         }
 
         // 2. Try Ely.by skin system
