@@ -78,27 +78,33 @@ public class MultiRTUtils {
         read(name);
     }
 
-    public static void postPrepare(String name) throws IOException {
-        File dest = new File(RUNTIME_FOLDER,"/" + name);
-        if(!dest.exists()) return;
-        Runtime runtime = read(name);
-        String libFolder = "lib";
-        if(new File(dest,libFolder + "/" + runtime.arch).exists()) libFolder = libFolder + "/" + runtime.arch;
-        File ftIn = new File(dest, libFolder + "/libfreetype.so.6");
-        File ftOut = new File(dest, libFolder + "/libfreetype.so");
-        if (ftIn.exists() && (!ftOut.exists() || ftIn.length() != ftOut.length())) {
-            if(!ftIn.renameTo(ftOut)) {
-                try {
-                    FileUtils.copyFile(ftIn, ftOut);
-                    ftIn.delete();
-                } catch (Exception e) {
-                    Log.w("MultiRTUtils", "Failed to copy libfreetype", e);
+    public static void postPrepare(String name) {
+        try {
+            File dest = new File(RUNTIME_FOLDER,"/" + name);
+            if(!dest.exists()) return;
+            Runtime runtime = read(name);
+            String libFolder = "lib";
+            if(runtime != null && runtime.arch != null && new File(dest,libFolder + "/" + runtime.arch).exists()) {
+                libFolder = libFolder + "/" + runtime.arch;
+            }
+            File ftIn = new File(dest, libFolder + "/libfreetype.so.6");
+            File ftOut = new File(dest, libFolder + "/libfreetype.so");
+            if (ftIn.exists() && (!ftOut.exists() || ftIn.length() != ftOut.length())) {
+                if(!ftIn.renameTo(ftOut)) {
+                    try {
+                        FileUtils.copyFile(ftIn, ftOut);
+                        ftIn.delete();
+                    } catch (Exception e) {
+                        Log.w("MultiRTUtils", "Failed to copy libfreetype", e);
+                    }
                 }
             }
-        }
 
-        // Refresh libraries
-        copyDummyNativeLib("libawt_xawt.so", dest, libFolder);
+            // Refresh libraries
+            copyDummyNativeLib("libawt_xawt.so", dest, libFolder);
+        } catch (Exception e) {
+            Log.w("MultiRTUtils", "postPrepare failed for " + name, e);
+        }
     }
 
     public static void installRuntimeNamedBinpack(InputStream universalFileInputStream, InputStream platformBinsInputStream, String name, String binpackVersion) throws IOException {
@@ -190,20 +196,23 @@ public class MultiRTUtils {
      * @param runtimePath The path to the runtime to walk into
      */
     private static void unpack200(String nativeLibraryDir, String runtimePath) {
+        try {
+            File basePath = new File(runtimePath);
+            Collection<File> files = listFiles(basePath, new String[]{"pack"}, true);
+            if (files == null || files.isEmpty()) return;
 
-        File basePath = new File(runtimePath);
-        Collection<File> files = listFiles(basePath, new String[]{"pack"}, true);
-
-        File workdir = new File(nativeLibraryDir);
-
-        ProcessBuilder processBuilder = new ProcessBuilder().directory(workdir);
-        for(File jarFile : files){
-            try{
-                Process process = processBuilder.command("./libunpack200.so", "-r", jarFile.getAbsolutePath(), jarFile.getAbsolutePath().replace(".pack", "")).start();
-                process.waitFor();
-            }catch (InterruptedException | IOException e) {
-                Log.e("MULTIRT", "Failed to unpack the runtime !");
+            File workdir = new File(nativeLibraryDir);
+            ProcessBuilder processBuilder = new ProcessBuilder().directory(workdir);
+            for(File jarFile : files){
+                try{
+                    Process process = processBuilder.command("./libunpack200.so", "-r", jarFile.getAbsolutePath(), jarFile.getAbsolutePath().replace(".pack", "")).start();
+                    process.waitFor();
+                }catch (Exception e) {
+                    Log.w("MULTIRT", "Failed to unpack pack200 file: " + jarFile.getName(), e);
+                }
             }
+        } catch (Exception e) {
+            Log.w("MULTIRT", "unpack200 error", e);
         }
     }
 
