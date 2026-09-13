@@ -255,14 +255,14 @@ public final class Tools {
             File[] existingMods = modsDir.listFiles();
             if (existingMods != null) {
                 for (File f : existingMods) {
-                    if (f.isFile() && f.getName().toLowerCase().contains("customskinloader")) {
+                    if (f.isFile() && (f.getName().toLowerCase().contains("customskinloader") || f.getName().toLowerCase().contains("neoskinloader"))) {
                         hasCslMod = true;
                         break;
                     }
                 }
             }
             if (!hasCslMod && APP_CONTEXT != null) {
-                File targetMod = new File(modsDir, "CustomSkinLoader_Universal-15.0.1.jar");
+                File targetMod = new File(modsDir, "NeoSkinLoader_Universal-15.0.1.jar");
                 try (java.io.InputStream in = APP_CONTEXT.getAssets().open("components/CustomSkinLoader.jar");
                      java.io.OutputStream out = new java.io.FileOutputStream(targetMod)) {
                     byte[] buffer = new byte[8192];
@@ -270,7 +270,7 @@ public final class Tools {
                     while ((read = in.read(buffer)) != -1) {
                         out.write(buffer, 0, read);
                     }
-                    Log.i("SkinSync", "Installed CustomSkinLoader mod to: " + targetMod.getAbsolutePath());
+                    Log.i("SkinSync", "Installed NeoSkinLoader mod to: " + targetMod.getAbsolutePath());
                 }
             }
         } catch (Exception e) {
@@ -1240,8 +1240,8 @@ public final class Tools {
     }
 
     public static void installMod(Activity activity, boolean customJavaArgs) {
-        if (MultiRTUtils.getExactJreName(8) == null) {
-            Toast.makeText(activity, R.string.multirt_nojava8rt, Toast.LENGTH_LONG).show();
+        if (MultiRTUtils.getRuntimes().isEmpty()) {
+            Toast.makeText(activity, R.string.multirt_config_removeerror_last, Toast.LENGTH_LONG).show();
             return;
         }
 
